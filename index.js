@@ -18,6 +18,7 @@ var galaxyTypes = [
 ];
 
 ctx.translate(ctx.canvas.width/2, ctx.canvas.height/2);
+ctx.globalAlpha = 0.4;
 
 ctx.fillStyle = ctx.strokeStyle = choice(magic.colors.ios);
 magic.render.antialias(ctx, function() {
