@@ -22,5 +22,16 @@
   "bugs": {
     "url": "https://github.com/GitbookIO/magic-covers/issues"
   },
-  "homepage": "https://github.com/GitbookIO/magic-covers#readme"
+  "homepage": "https://github.com/GitbookIO/magic-covers#readme",
+  "devDependencies": {
+    "browserify": "^11.2.0",
+    "gulp": "^3.9.0",
+    "gulp-connect": "^2.2.0",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-util": "^3.0.6",
+    "lodash.assign": "^3.2.0",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0",
+    "watchify": "^3.4.0"
+  }
 }
