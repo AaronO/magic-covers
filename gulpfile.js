@@ -44,6 +44,6 @@ function bundle() {
 gulp.task('dev', ['js'], function() {
   return connect.server({
       port: 8888,
-      root: './',
+      root: './dist/',
   });
 });
