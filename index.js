@@ -38,8 +38,8 @@ magic.render.antialias(ctx, function() {
     ctx.stroke(path(points));
     points.forEach(function(p) {
         ctx.fillStyle = ctx.strokeStyle = choice(magic.colors.ios);
-        magic.render.shift(ctx, p[0]+randInt(-3, 3), p[1]+randInt(-3, 3), function() {
-            ctx.fill(path(circle(randInt(1, 6))));
+        magic.render.shift(ctx, p[0]+randInt(-5, 5), p[1]+randInt(-5, 5), function() {
+            ctx.fill(path(circle(randInt(1, 10))));
         });
     });
 });
