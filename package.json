@@ -1,0 +1,26 @@
+{
+  "name": "magic-covers",
+  "version": "0.0.0",
+  "description": "Generative magical covers with generative art",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GitbookIO/magic-covers.git"
+  },
+  "keywords": [
+    "magic",
+    "covers",
+    "generative",
+    "art",
+    "gitbook",
+    "canvas"
+  ],
+  "author": "Aaron O'Mullan <aaron.omullan@gmail.com>",
+  "bugs": {
+    "url": "https://github.com/GitbookIO/magic-covers/issues"
+  },
+  "homepage": "https://github.com/GitbookIO/magic-covers#readme"
+}
