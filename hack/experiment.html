@@ -1,0 +1,436 @@
+<style type="text/css">
+body {
+    background: #141414;
+    background: #EE7685;
+    background: #fff;
+
+    background: #141414;
+    background: #fff;
+}
+</style>
+<center>
+<canvas id="canvas" width="600" height="600"></canvas>
+</center>
+
+<script type="text/javascript">
+var canvas = document.getElementById('canvas');
+var ctx = canvas.getContext('2d');
+
+function curve(func, width, steps) {
+    // 100 step resolution by default
+    steps = steps || 100;
+    // Step size
+    var dt = width/steps;
+    // Build points
+    var points = [];
+    for(var t = 0; steps-- > 0; t += dt) {
+        points.push(func(t));
+    }
+    return points;
+}
+
+function parametric(func, steps) {
+    return curve(func, 2*Math.PI, steps);
+}
+
+function petal(radius, steps) {
+    return parametric(function(t) {
+        return [
+            Math.cos(t) * radius,
+            0.5 * Math.sin(t) * Math.sin(0.5*t) * radius,
+        ];
+    }, steps);
+}
+
+function circle(radius, steps) {
+    return parametric(function(t) {
+        return [
+            Math.cos(t) * radius,
+            Math.sin(t) * radius,
+        ];
+    }, steps);
+}
+
+function galaxySpiral(radius, N, B, steps) {
+    return parametric(function(t) {
+        return [
+            Math.cos(t) * radius / Math.log(B*Math.tan(t/(2*N))),
+            Math.sin(t) * radius / Math.log(B*Math.tan(t/(2*N))),
+        ];
+    }, steps);
+    
+}
+
+function galaxy(radius, N, B, POINTS) {
+    // Create spiral
+    var spiral = galaxySpiral(radius, N, B, POINTS);
+    // Rotated copy (2nd spiral)
+    var spiral2 = rotate(spiral, Math.PI);
+
+    // Reverse 1st sprial
+    // so both spirals join at the center
+    spiral.reverse();
+
+    // Join spirals
+    return spiral.concat(spiral2);
+}
+
+function waveCircle(radius, steps) {
+    return parametric(function(t) {
+        return [
+            (radius + radius/10*Math.sin(3*t)) * Math.cos(t),
+            (radius + radius/10*Math.sin(3*t)) * Math.sin(t),
+        ];
+    }, steps);
+}
+
+function roundPolygon(radius, nSides, steps) {
+    return parametric(function(t) {
+        return [
+            (radius + Math.sqrt(radius)*Math.sin(nSides*t)) * Math.cos(t),
+            (radius + Math.sqrt(radius)*Math.sin(nSides*t)) * Math.sin(t),
+        ];
+    }, steps);
+}
+
+function circloid(radius, dt, steps) {
+    return curve(function(t) {
+        return [
+            Math.cos(t) * radius,
+            Math.sin(t) * radius,
+        ];
+    }, dt*steps, steps);
+}
+
+function wave(amplitude, periods, width, steps) {
+    return curve(function(t) {
+        return [
+            t,
+            amplitude*Math.sin(t/(width/periods)*Math.PI*2),
+        ];
+    }, width, steps);
+}
+
+function negate(points) {
+    return point.map(function(p) {
+        return [-p[0], -p[1]];
+    })
+}
+
+// Path turns an array of points into a Path2D object
+function path(points) {
+    var p = new Path2D();
+    points.forEach(function(point) {
+        p.lineTo(point[0], point[1]);
+    });
+    return p;
+}
+
+function bezierPath(controlA, controlB, points) {
+    var p = new Path2D();
+    for(var i=0; i < points.length; i++) {
+        p.bezierCurveTo(
+            controlA[i][0], controlA[i][1],
+            controlB[i][0], controlB[i][1],
+            points[i][0], points[i][1]
+        );
+    }
+    return p;
+}
+
+function sum(a, b) {
+    var points = [];
+    for(var i=0; i < a.length; i++) {
+        points.push([
+            a[i][0]+b[i][0],
+            a[i][1]+b[i][1],
+        ]);
+    }
+    return points;
+}
+
+function rgbaStyle(r, g, b, a) {
+    var colors = [r,g,b].map(function(x) {
+        return Math.floor(255*x);
+    }).join(', ');
+
+    return "rgba("+colors+", "+a+")";
+}
+
+function hslaStyle(h, s, l, a) {
+    var colors = [
+        Math.floor(h*360),
+        Math.floor(s*100)+'%',
+        Math.floor(l*100)+'%',
+    ].join(', ');
+
+    return "hsla("+colors+", "+a+")";
+}
+
+function shift(ctx, x, y, func) {
+    ctx.translate(x, y);
+    func();
+    ctx.translate(-x, -y);
+}
+
+function antialias(ctx, func) {
+    shift(ctx, 0.5, 0.5, func);
+    //func();
+}
+
+var rand = Math.random;
+function randInt(min, max) {
+    if(!max) {
+        max = min;
+        min = 0;
+    }
+    return min+Math.floor(rand()*(max-min));
+}
+
+function randChoice(array) {
+    return array[randInt(array.length)];
+}
+
+function shuffle(array) {
+    return fisherYates(array.slice());
+}
+
+function fisherYates( array ){
+    var count = array.length;
+    var randomnumber;
+    var temp;
+
+    while(count) {
+        randomnumber = Math.random() * count-- | 0;
+        temp = array[count];
+        array[count] = array[randomnumber];
+        array[randomnumber] = temp
+    }
+}
+
+function rotate(points, theta) {
+    return points
+    .map(function(p) {
+        return rotatePoint(p, theta);
+    });
+} 
+
+// Rotate a point around origin
+function rotatePoint(point, theta) {
+    var px = point[0];
+    var py = point[1];
+    var ox = 0;
+    var oy = 0;
+
+    return [
+        Math.cos(theta) * (px-ox) - Math.sin(theta) * (py-oy) + ox,
+        Math.sin(theta) * (px-ox) + Math.cos(theta) * (py-oy) + oy,   
+    ];
+}
+
+function range(min, max) {
+    if(!max) {
+        max = min;
+        min = 0;
+    }
+    var _range = max - min;
+    var array = new Array(_range);
+
+    for(var i = 0; i < _range; i++) {
+        array[i] = min+i;
+    }
+
+    return array;
+}
+
+// Zip combines multiple arrays of points together
+// useful for combining equations
+function zip(arrs) {
+    // How many arrays
+    var n = arrs.length;
+    // How many per array
+    var x = arrs[0].length;
+
+    var points = [];
+    for(var xi=0; xi < x; xi++) {
+        for(var ni=0; ni < n; ni++) {
+            points.push(arrs[ni][xi]);
+        }
+    }
+
+    return points;
+}
+
+function measure(f) {
+    var t1 = Date.now();
+    f();
+    console.log('Took', (Date.now()-t1)+'ms');
+}
+
+// Style
+ctx.fillStyle = ctx.strokeStyle = rgbaStyle(0.4, 0.4, 0.4, 0.4);
+ctx.fillStyle = ctx.strokeStyle = hslaStyle(rand(), rand(0.5, 0.9), 0.7, 0.4);
+ctx.fillStyle = ctx.strokeStyle = rgbaStyle(1.0, 1.0, 1.0, 1);
+ctx.globalAlpha = 0.4;
+
+var t1 = Date.now();
+
+// Move to center
+ctx.translate(300, 300);
+
+var iosColors = ["#5856d6", "#007aff", "#34aadc", "#5ac8fa", "#4cd964", "#ff2d55", "#ff3b30", "#ff9500", "#ffcc00", "#8e8e93"];
+
+// Wave
+/*
+shift(ctx, -350, 0, function() {
+antialias(ctx, function() {
+    range(20).forEach(function(i) {
+        shift(ctx, i*100/20, 0, function() {
+            ctx.fillStyle = ctx.strokeStyle = randChoice(iosColors);
+            ctx.fill(path(wave(rand()*600/(2*Math.PI*2), 12, 1200, 1000)));
+        });
+    });
+        
+});
+});
+//*/
+
+var rainbowColors = range(12).map(function(i) {
+    return hslaStyle(i*1/12, 1, 1, 1);
+});
+
+
+// Draw Galaxy
+/*
+ctx.fillStyle = ctx.strokeStyle = randChoice(iosColors);
+antialias(ctx, function() {
+    var B = 0.5;
+    //var N = 4;
+    var N = randInt(3, 6);
+
+    // Draw two halves of spiral
+    ctx.stroke(path(galaxy(100, B, N, 500)));
+    ctx.rotate(Math.PI);
+    ctx.stroke(path(galaxy(100, B, N, 500)));
+});
+//*/
+
+// Pairs of N & B for common galaxy spirals
+// Ref: http://arxiv.org/pdf/0908.0892.pdf
+var galaxyTypes = [
+    // N, B
+    [8, 0.05],
+    [4, 0.5],
+    [4, 1],
+    [2, 5],
+];
+
+// Draw Galaxy with logs of small circles
+///*
+ctx.fillStyle = ctx.strokeStyle = randChoice(iosColors);
+antialias(ctx, function() {
+    var params = randChoice(galaxyTypes);
+    var N = params[0];
+    var B = params[1];
+    var RADIUS = 200;
+    var POINTS = 200;
+
+    // Randomly rotate everything
+    ctx.rotate(randInt(24)*Math.PI/12);
+
+    // Get galaxy's points
+    var points = galaxy(RADIUS, N, B, POINTS);
+    
+    // Draw
+    ctx.stroke(path(points));
+    points.forEach(function(p) {
+        ctx.fillStyle = ctx.strokeStyle = randChoice(iosColors);
+        shift(ctx, p[0]+randInt(-3, 3), p[1]+randInt(-3, 3), function() {
+            ctx.fill(path(circle(randInt(1, 6))));
+        });
+    });
+});
+//*/
+
+
+// Dot
+//ctx.fill(path(circle(10)));
+
+// Draw Flower
+/*
+var n = randInt(3, 20);
+for(var i=0; i < n; i++) {
+    ctx.rotate(2*Math.PI/n);
+    ctx.fillStyle = ctx.strokeStyle = randChoice(iosColors);
+    shift(ctx, 100, 0, function() {
+        ctx.fill(path(petal(100)));
+    });
+}
+//*/
+
+
+// Draw flower with tons of tiny circles
+/*
+var n = randInt(4, 20);
+for(var i=0; i < n; i++) {
+    ctx.rotate(2*Math.PI/n);
+
+    shift(ctx, 100, 0, function() {
+        ctx.fillStyle = ctx.strokeStyle = randChoice(iosColors);
+        //ctx.fillStyle = ctx.strokeStyle = randChoice(rainbowColors);
+        ctx.fill(path(roundPolygon(100, 4, 1000)));
+        ///*
+        roundPolygon(100, 2, 50).forEach(function(p) {
+            shift(ctx, p[0]+randInt(-3, 3), p[1]+randInt(-3, 3), function() {
+                //ctx.stroke(path(waveCircle(100, 1000)));
+                //ctx.fill(path(circle(randInt(5, 10))));
+            });
+        });
+        //*//*
+    });
+}
+//*/
+
+
+// Draw wavy circle
+// ctx.stroke(path(waveCircle(100, 1000)));
+
+
+/*
+    Crazy pattern of curves controled by circloids
+*/
+///*
+var b = randInt(-10, 10);
+var b2 = randInt(-10, 10);
+var eq1 = circloid(-135, -b, 720);
+var eq2 = circloid(-165, b2, 720);
+var eq3 = circloid(150, randInt(3, 9), 720);
+var eq4 = circloid(325, b2, 720);
+//*/
+
+// Crazy
+/*
+measure(function() {
+    for(var i=0; i < eq1.length; i++) {
+        var x1 = eq1[i][0];
+        var y1 = eq1[i][1];
+        var x2 = eq2[i][0];
+        var y2 = eq2[i][1];
+        var x3 = eq3[i][0];
+        var y3 = eq3[i][1];
+        var x4 = eq4[i][0];
+        var y4 = eq4[i][1];
+
+        ctx.bezierCurveTo(x4, y4, x3, y3, x1+x2, y1+y2);
+    }
+    ctx.stroke();
+})
+//*/
+
+console.log(Date.now()-t1)
+
+//ctx.translate(-150, 150)
+//ctx.rotate(Math.PI*3/4)
+//console.log(JSON.stringify(petal(200, 200)));
+//console.log(Date.now() - t1);
+</script>
