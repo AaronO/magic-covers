@@ -58,7 +58,7 @@ function galaxySpiral(radius, N, B, steps) {
             Math.sin(t) * radius / Math.log(B*Math.tan(t/(2*N))),
         ];
     }, steps);
-    
+
 }
 
 function galaxy(radius, N, B, POINTS) {
@@ -213,7 +213,7 @@ function rotate(points, theta) {
     .map(function(p) {
         return rotatePoint(p, theta);
     });
-} 
+}
 
 // Rotate a point around origin
 function rotatePoint(point, theta) {
@@ -224,7 +224,7 @@ function rotatePoint(point, theta) {
 
     return [
         Math.cos(theta) * (px-ox) - Math.sin(theta) * (py-oy) + ox,
-        Math.sin(theta) * (px-ox) + Math.cos(theta) * (py-oy) + oy,   
+        Math.sin(theta) * (px-ox) + Math.cos(theta) * (py-oy) + oy,
     ];
 }
 
@@ -290,7 +290,7 @@ antialias(ctx, function() {
             ctx.fill(path(wave(rand()*600/(2*Math.PI*2), 12, 1200, 1000)));
         });
     });
-        
+
 });
 });
 //*/
@@ -326,7 +326,7 @@ var galaxyTypes = [
 ];
 
 // Draw Galaxy with logs of small circles
-///*
+/*
 ctx.fillStyle = ctx.strokeStyle = randChoice(iosColors);
 antialias(ctx, function() {
     var params = randChoice(galaxyTypes);
@@ -340,7 +340,7 @@ antialias(ctx, function() {
 
     // Get galaxy's points
     var points = galaxy(RADIUS, N, B, POINTS);
-    
+
     // Draw
     ctx.stroke(path(points));
     points.forEach(function(p) {
@@ -357,33 +357,40 @@ antialias(ctx, function() {
 //ctx.fill(path(circle(10)));
 
 // Draw Flower
-/*
+///*
 var n = randInt(3, 20);
 for(var i=0; i < n; i++) {
     ctx.rotate(2*Math.PI/n);
     ctx.fillStyle = ctx.strokeStyle = randChoice(iosColors);
     shift(ctx, 100, 0, function() {
-        ctx.fill(path(petal(100)));
+        //ctx.fill(path(petal(100)));
+        petal(100).forEach(function(point) {
+            var x = point[0];
+            var y = point[1];
+            shift(ctx, x, y, function() {
+                ctx.fill(path(circle(randInt(3, 3))));
+            });
+
+        });
     });
 }
 //*/
 
-
 // Draw flower with tons of tiny circles
 /*
-var n = randInt(4, 20);
+var n = randInt(8, 12);
 for(var i=0; i < n; i++) {
     ctx.rotate(2*Math.PI/n);
-
     shift(ctx, 100, 0, function() {
-        ctx.fillStyle = ctx.strokeStyle = randChoice(iosColors);
+        //ctx.fillStyle = ctx.strokeStyle = randChoice(iosColors);
         //ctx.fillStyle = ctx.strokeStyle = randChoice(rainbowColors);
-        ctx.fill(path(roundPolygon(100, 4, 1000)));
+        //ctx.fill(path(roundPolygon(100, 4, 1000)));
         ///*
         roundPolygon(100, 2, 50).forEach(function(p) {
             shift(ctx, p[0]+randInt(-3, 3), p[1]+randInt(-3, 3), function() {
                 //ctx.stroke(path(waveCircle(100, 1000)));
-                //ctx.fill(path(circle(randInt(5, 10))));
+                ctx.fillStyle = ctx.strokeStyle = randChoice(iosColors);
+                ctx.fill(path(circle(randInt(2, 6))));
             });
         });
         //*//*
@@ -402,14 +409,20 @@ for(var i=0; i < n; i++) {
 ///*
 var b = randInt(-10, 10);
 var b2 = randInt(-10, 10);
+var c = randInt(3, 9);
+// var b = 1;
+// var b2 = 3.8;
+// var c = 3;
 var eq1 = circloid(-135, -b, 720);
 var eq2 = circloid(-165, b2, 720);
-var eq3 = circloid(150, randInt(3, 9), 720);
+var eq3 = circloid(150, c, 720);
 var eq4 = circloid(325, b2, 720);
 //*/
 
 // Crazy
-/*
+///*
+ctx.fillStyle = ctx.strokeStyle = rgbaStyle(0, 0, 0, 0.5);
+
 measure(function() {
     for(var i=0; i < eq1.length; i++) {
         var x1 = eq1[i][0];
